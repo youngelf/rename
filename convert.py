@@ -197,7 +197,7 @@ def removeDoubleQuotes(inString):
 
     # Check if there's additional quoting added by the user, and
     # remove it.
-    if (inString[0] == inString[-1]):
+    if (len(inString) > 2 and inString[0] == inString[-1]):
         q = inString[0]
         if (q in "\"'"):
             return inString.strip(q)
