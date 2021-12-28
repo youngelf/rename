@@ -70,11 +70,9 @@ def main():
     newRegex = sys.argv[2]
     dryrun = sys.argv[3] == '-n'
 
-    print(r"""Renaming with in_re="%s" and out_re="%s""" % (oldRegex, newRegex))
+    print(r"""Renaming with in_re="%s" and out_re="%s" """ % (oldRegex, newRegex))
     d = dirNamer(oldRegex, newRegex)
     d.qq()
 
-    
 if __name__ == "__main__":
     main()
-    
