@@ -14,7 +14,13 @@ import argparse, os, re, sys
 # TODO: transaction mode: either all should succeed or rollback.
 
 class dirNamer():
-    def __init__(self, oldRegex, newRegex, translateNum=0):
+    def __init__(self, oldRegex, newRegex,
+                 dryrun=True,
+                 generate_bash=True,
+                 modifyDirs=True,
+                 modifyFiles=True,
+                 translateNum=0):
+
         self.oldRegex = oldRegex
         self.newRegex = newRegex
 
@@ -22,10 +28,10 @@ class dirNamer():
         self.translateNum = translateNum
         self.rootDir = "."
 
-        self.generate_bash = True
-        self.dryrun = True
-        self.modifyFiles = True
-        self.modifyDirs = True
+        self.generate_bash = generate_bash
+        self.dryrun = dryrun
+        self.modifyFiles = modifyFiles
+        self.modifyDirs = modifyDirs
 
     def qq(self):
         # If we are to recurse, we should change the leaves first, otherwise
@@ -64,14 +70,51 @@ class dirNamer():
 def main():
     # Get the arguments here. For now, clobber spaces to underscores
 
-# TODO use argparse here, looks darn complicated.
+    desc=""" Utility to bulk rename files, recursively
+ This utility applies a regular expression rename to all files and directories.
+It will rename leaf files before renaming higher-level directories.
 
-    oldRegex = sys.argv[1]
-    newRegex = sys.argv[2]
-    dryrun = sys.argv[3] == '-n'
+It can wreck your filesystem, so try running with dry-run turned on first.
 
-    print(r"""Renaming with in_re="%s" and out_re="%s" """ % (oldRegex, newRegex))
-    d = dirNamer(oldRegex, newRegex)
+Calling it with --in-re='' --out-re='_' will rewrite all space characters to
+underscores.
+
+Examples:
+    # Replace every _-_ by _
+    rename.py --in-re='_-_' --out-re='-'
+
+    # Replace at max 3 _ by -
+    rename.py --in-re='_' --out-re='-' --count=3
+
+    # Only look at toplevel
+    rename.py --in-re='_' --out-re='-' --recursive=False
+
+    # Don't modify files, just show what it would do
+    rename.py --in-re='_' --out-re='-' --dry-run
+
+
+"""
+    # TODO use argparse here, looks darn complicated.
+    desc=""
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument('-i', '--in-regex', type=ascii, required=True,
+                        help="Regular expression applied to existing filename")
+    parser.add_argument('-o', '--out-regex', type=ascii, required=True,
+                        help="Expression to write in new filename")
+    parser.add_argument('-n', '--dry-run',
+                        help="If true, do not modify files")
+    parser.add_argument('-r', '--recursive',
+                        help="If true, recursively traverse filesystem")
+
+    args = parser.parse_args()
+
+    print(args)
+    oldRegex = args.in_regex
+    newRegex = args.out_regex
+    dryrun = args.dry_run == None
+
+    print(r"""Renaming with in_re="%s" and out_re="%s", dryrun=%s """ % (oldRegex, newRegex, dryrun))
+    d = dirNamer(oldRegex, newRegex, dryrun)
     d.qq()
 
 if __name__ == "__main__":
